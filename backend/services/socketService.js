@@ -144,7 +144,7 @@ const initializeSocket = (server) => {
     // Add or update reaction on message
     socket.on(
       "add_reaction",
-      async ({ messageId, emoji, userId, reactionUserId }) => {
+      async ({ messageId, emoji, userId: reactionUserId }) => {
         try {
           const message = await Message.findById(messageId);
           if (!message) return;
@@ -154,7 +154,7 @@ const initializeSocket = (server) => {
           );
 
           if (existingIndex > -1) {
-            const exiting = message.reactions(existingIndex);
+            const exiting = message.reactions[existingIndex];
             if (exiting.emoji === emoji) {
               // remove same reaction
               message.reactions.splice(existingIndex, 1);

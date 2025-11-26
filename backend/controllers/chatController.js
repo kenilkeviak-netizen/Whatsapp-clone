@@ -217,7 +217,7 @@ exports.markAsRead = async (req, res) => {
 };
 
 exports.deleteMessages = async (req, res) => {
-  const { messageId } = req.body;
+  const { messageId } = req.params;
   const userId = req.user.userId;
 
   try {

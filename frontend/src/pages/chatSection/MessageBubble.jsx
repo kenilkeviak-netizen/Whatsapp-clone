@@ -1,7 +1,15 @@
 import React, { useRef, useState } from "react";
 import { format } from "date-fns";
-import { FaCheck, FaCheckDouble } from "react-icons/fa";
+import {
+  FaCheck,
+  FaCheckDouble,
+  FaPlus,
+  FaRegCopy,
+  FaSmile,
+} from "react-icons/fa";
 import { HiDotsVertical } from "react-icons/hi";
+import EmojiPicker from "emoji-picker-react";
+import useOutsideclick from "../../hooks/useOutsideclick";
 
 const MessageBubble = ({
   message,
@@ -13,76 +21,203 @@ const MessageBubble = ({
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showReactions, setShowReactions] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
-  const messageRef = useRef(null);
-  const optionRef = useRef(null);
+
+  const emojiRef = useRef(null);
   const reactionRef = useRef(null);
-  const emojiPickerRef = useRef(null);
-  const isUserMessage = message.sender._id === currentUser?._id;
+  const optionRef = useRef(null);
 
-  const bubbleClass = isUserMessage ? `chat-end` : `chat-start`;
+  const isUser = message?.sender?._id === currentUser?._id;
 
-  const bubbleContentClass = isUserMessage
-    ? `chat-bubble md:max-w-[50%] min-w-[130px] ${
-        theme === "dark" ? "bg-[#144d38] text-white" : "bg-[#d9fdd3] text-black"
-      }`
-    : `chat-bubble md:max-w-[50%] min-w-[130px] ${
-        theme === "dark" ? "bg-[#144d38] text-white" : "bg-[#d9fdd3] text-black"
-      }`;
+  /** WhatsApp bubble background color */
+  const sentBg = theme === "dark" ? "bg-[#005c4b]" : "bg-[#d9fdd3]";
+  const recvBg = theme === "dark" ? "bg-[#202c33]" : "bg-white";
+
+  /** WhatsApp bubble shape */
+  const bubbleShape = isUser
+    ? "rounded-l-lg rounded-tr-lg"
+    : "rounded-r-lg rounded-tl-lg";
+
+  /** WhatsApp message alignment */
+  const align = isUser ? "justify-end pr-4" : "justify-start pl-4";
+
+  /** Small quick reactions */
+  const quick = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
 
   const handleReact = (emoji) => {
     onReact(message._id, emoji);
-    setShowEmojiPicker(false);
     setShowReactions(false);
+    setShowEmojiPicker(false);
   };
 
-  if (message === 0) return;
+  /** Close popups when clicked outside */
+  useOutsideclick(emojiRef, () => showEmojiPicker && setShowEmojiPicker(false));
+  useOutsideclick(reactionRef, () => showReactions && setShowReactions(false));
+  useOutsideclick(optionRef, () => showOptions && setShowOptions(false));
 
-  const quickReactions = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
   return (
-    <div className={`chat ${bubbleClass}`}>
-      <div className={`${bubbleContentClass} relative group`} ref={messageRef}>
-        <div className="flex justify-center gap-2">
+    <div className={`w-full flex ${align} my-1`}>
+      <div className="relative group max-w-[70%]">
+        {/* Bubble */}
+        <div
+          className={`px-3 py-2 text-sm shadow-sm break-words ${bubbleShape} ${
+            isUser ? sentBg : recvBg
+          }`}
+        >
+          {/* TEXT */}
           {message.contentType === "text" && (
-            <p className="mr-2">{message.content}</p>
+            <p className="whitespace-pre-wrap">{message.content}</p>
           )}
+
+          {/* IMAGE */}
           {message.contentType === "image" && (
             <div>
               <img
                 src={message.imageOrVideoUrl}
-                alt="images"
-                className="rounded-lg max-w-xs"
+                className="rounded-md mb-1 max-w-full"
+                alt="media"
               />
-              <p className="mt-1">{message.content}</p>
+              {message.content && <p>{message.content}</p>}
             </div>
           )}
+
+          {/* TIME + TICK */}
+          <div className="h-3 flex justify-end items-center gap-1 text-[10px] opacity-70 mt-1">
+            {format(new Date(message.createdAt), "HH:mm")}
+
+            {isUser && (
+              <>
+                {/* SENT */}
+                {message.messageStatus === "send" && (
+                  <FaCheck size={10} className="text-gray-500" />
+                )}
+
+                {/* DELIVERED */}
+                {message.messageStatus === "delivered" && (
+                  <FaCheckDouble size={10} className="text-gray-500" />
+                )}
+
+                {/* READ */}
+                {message.messageStatus === "read" && (
+                  <FaCheckDouble size={10} className="text-blue-500" />
+                )}
+              </>
+            )}
+          </div>
         </div>
 
-        <div className="self-end flex items-center justify-end gap-1 text-xs opacity-60 mt-2 ml-2">
-          <span>{format(new Date(message.createdAt), "HH:mm")}</span>
+        {/* 3 DOT MENU */}
+        <button
+          ref={optionRef}
+          onClick={() => setShowOptions(!showOptions)}
+          className={`absolute ${isUser ? "-right-6" : "-left-6"} top-1 
+          opacity-0 group-hover:opacity-100 transition`}
+        >
+          <HiDotsVertical className="text-gray-500" />
+        </button>
 
-          {isUserMessage && (
-            <>
-              {message.messageStatus === "send" && <FaCheck size={12} />}
-              {message.messageStatus === "delivered" && (
-                <FaCheckDouble size={12} />
-              )}
-              {message.messageStatus === "delivered" && (
-                <FaCheckDouble size={12} className="text-blue-600" />
-              )}
-            </>
-          )}
-        </div>
+        {/* SMILE BUTTON (REACTION TRIGGER) */}
+        <button
+          onClick={() => setShowReactions(!showReactions)}
+          className={`absolute ${isUser ? "-left-9" : "-right-9"} 
+          top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100
+          bg-white p-1.5 rounded-full shadow`}
+        >
+          <FaSmile className="text-gray-700 text-[14px]" />
+        </button>
 
-        <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-          <button
-            className={`p-1 rounded-full ${
-              theme === "dark" ? "text-white" : "text-gray-800"
-            }`}
-            onClick={() => setShowOptions((prev) => !prev)}
+        {/* QUICK REACTION POPUP */}
+        {showReactions && (
+          <div
+            ref={reactionRef}
+            className={`absolute ${isUser ? "right-0" : "left-0"} 
+            -top-10 bg-[#202c33] text-white px-2 py-1 rounded-full
+            flex gap-1 items-center shadow-lg`}
           >
-            <HiDotsVertical size={18} />
-          </button>
-        </div>
+            {quick.map((em, i) => (
+              <button
+                key={i}
+                onClick={() => handleReact(em)}
+                className="text-[14px] hover:scale-110 transition"
+              >
+                {em}
+              </button>
+            ))}
+
+            <div className="w-[1px] h-4 bg-gray-500 mx-1" />
+
+            <button onClick={() => setShowEmojiPicker(true)}>
+              <FaPlus className="text-[12px]" />
+            </button>
+          </div>
+        )}
+
+        {/* FULL EMOJI PICKER */}
+        {showEmojiPicker && (
+          <div
+            ref={emojiRef}
+            className={`absolute ${isUser ? "right-0" : "left-0"} top-10 z-50`}
+          >
+            <EmojiPicker
+              emojiStyle="native"
+              onEmojiClick={(e) => handleReact(e.emoji)}
+              theme={theme}
+            />
+          </div>
+        )}
+
+        {/* REACTION BADGES (SMALLER NOW) */}
+        {message.reactions?.length > 0 && (
+          <div
+            className={`-mt-1.5 flex ${
+              isUser ? "justify-end" : "justify-start"
+            }`}
+          >
+            <div className="px-1 py-1 bg-gray-200 dark:bg-[#b3b4b4] rounded-full shadow flex gap-1">
+              {message.reactions.map((r, i) => (
+                <span key={i} className="text-[12px] leading-none">
+                  {r.emoji}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {showOptions && (
+          <div
+            ref={optionRef}
+            className={`absolute top-8 right-1 z-50 w-36 rounded-xl shadow-lg py-2 text sm ${
+              theme === "dark"
+                ? "bg-[#1d1f1f] text-white"
+                : "bg-gray-100 text-black"
+            }`}
+          >
+            <button
+              onClick={() => {
+                if (message.contentType === "text") {
+                  navigator.clipboard.writeText(message.content);
+                }
+                setShowOptions(false);
+              }}
+              className="flex items-center w-full px-4 py-2 gap-3 rounded-lg"
+            >
+              <FaRegCopy size={14} />
+              <span>Copy</span>
+            </button>
+
+            {isUser && (
+              <button
+                onClick={() => {
+                  deleteMessage(message?._id);
+                  setShowOptions(false);
+                }}
+                className="flex items-center w-full px-4 py-2 gap-3 rounded-lg text-red-600"
+              >
+                <FaRegCopy className="text-red-500" size={14} />
+                <span>Delete</span>
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

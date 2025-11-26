@@ -26,7 +26,10 @@ export const useChatStore = create((set, get) => ({
     socket.off("message_delete");
 
     // listen for incoming message
-    socket.on("receive_message", (message) => {});
+    socket.on("receive_message", (message) => {
+      const { receiveMessage } = get();
+      receiveMessage(message);
+    });
 
     // conform message delivery
     socket.on("message_send", (message) => {
@@ -47,10 +50,10 @@ export const useChatStore = create((set, get) => ({
     });
 
     // handle reaction on message
-    socket.on("reaction_update", ({ messageId, reaction }) => {
+    socket.on("reaction_update", ({ messageId, reactions }) => {
       set((state) => ({
         messages: state.messages.map((msg) =>
-          msg._id === messageId ? { ...msg, reaction } : msg
+          msg._id === messageId ? { ...msg, reactions } : msg
         ),
       }));
     });
@@ -245,42 +248,36 @@ export const useChatStore = create((set, get) => ({
   receiveMessage: (message) => {
     if (!message) return;
 
-    const { currentConversation, currentUser, messages } = get();
+    const { currentConversation, messages } = get();
 
-    const messageExists = message.some((msg) => msg._id === message._id);
-    if (messageExists) return;
+    // Avoid duplicate messages
+    if (messages.some((msg) => msg._id === message._id)) return;
 
+    // Add message only if it belongs to the open conversation
     if (message.conversation === currentConversation) {
       set((state) => ({
         messages: [...state.messages, message],
       }));
-
-      if (message.receiver?._id === currentUser?._id) {
-        get().markMessageAsRead();
-      }
     }
 
-    // update conversation preview and unread count
+    // Update conversation preview list
     set((state) => {
-      const updateConversations = state.conversations?.data?.map((conv) => {
-        if (conv._id === message.conversation) {
+      const updated = state.conversations?.data?.map((c) => {
+        if (c._id === message.conversation) {
           return {
-            ...conv,
+            ...c,
             lastMessage: message,
             unreadCount:
-              message?.receiver?._id === currentUser?._id
-                ? (conv.unreadCount || 0) + 1
-                : conv.unreadCount || 0,
+              message.receiver === state.currentUser?._id
+                ? (c.unreadCount || 0) + 1
+                : c.unreadCount,
           };
         }
-        return conv;
+        return c;
       });
 
       return {
-        conversations: {
-          ...state.conversations,
-          data: updateConversations,
-        },
+        conversations: { ...state.conversations, data: updated },
       };
     });
   },
