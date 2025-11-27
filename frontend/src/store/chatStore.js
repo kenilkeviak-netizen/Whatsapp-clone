@@ -41,10 +41,13 @@ export const useChatStore = create((set, get) => ({
     });
 
     // update message status
-    socket.on("message_status_update", ({ messageId, messageStatus }) => {
+    socket.on("message_status_update", (payload) => {
+      const messageIds = payload.messageIds || [payload.messageId];
+      const status = payload.messageStatus;
+
       set((state) => ({
         messages: state.messages.map((msg) =>
-          msg._id === messageId ? { ...msg, messageStatus } : msg
+          messageIds.includes(msg._id) ? { ...msg, messageStatus: status } : msg
         ),
       }));
     });
@@ -109,10 +112,7 @@ export const useChatStore = create((set, get) => ({
           socket.emit("get_user_status", otherUser._id, (status) => {
             set((state) => {
               const newOnlineUsers = new Map(state.onlineUsers);
-              newOnlineUsers.set(state.userId, {
-                isOnline: state.isOnline,
-                lastSeen: state.lastSeen,
-              });
+              newOnlineUsers.set(otherUser._id, status);
               return { onlineUsers: newOnlineUsers };
             });
           });
@@ -315,7 +315,9 @@ export const useChatStore = create((set, get) => ({
       if (socket) {
         socket.emit("message_read", {
           messageIds: unreadIds,
-          senderId: messages[0]?.sender?._id,
+          // senderId: messages[0]?.sender?._id,
+          senderId: messages.find((msg) => msg.sender?._id !== currentUser._id)
+            ?.sender?._id,
         });
       }
     } catch (error) {
@@ -394,7 +396,7 @@ export const useChatStore = create((set, get) => ({
   getUserLastSeen: (userId) => {
     if (!userId) return null;
     const { onlineUsers } = get();
-    return onlineUsers.get(userId)?.isOnline || false;
+    return onlineUsers.get(userId)?.lastSeen || null;
   },
 
   cleanup: () => {

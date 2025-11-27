@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import LayOut from "./LayOut";
+import Layout from "./Layout";
 import ChatList from "../pages/chatSection/ChatList";
 import { getAllUser } from "../services/user.service";
 import useLayoutStore from "../store/layoutStore";
@@ -27,7 +27,7 @@ const HomePage = () => {
   // console.log("All users:", allUsers);
 
   return (
-    <LayOut>
+    <Layout>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -36,7 +36,7 @@ const HomePage = () => {
       >
         <ChatList contacts={allUsers} />
       </motion.div>
-    </LayOut>
+    </Layout>
   );
 };
 

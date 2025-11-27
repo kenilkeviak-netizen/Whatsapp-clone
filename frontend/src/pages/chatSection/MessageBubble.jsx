@@ -59,7 +59,7 @@ const MessageBubble = ({
       <div className="relative group max-w-[70%]">
         {/* Bubble */}
         <div
-          className={`px-3 py-2 text-sm shadow-sm break-words ${bubbleShape} ${
+          className={`px-2 py-1.5 text-sm shadow-sm break-words ${bubbleShape} ${
             isUser ? sentBg : recvBg
           }`}
         >
@@ -81,24 +81,24 @@ const MessageBubble = ({
           )}
 
           {/* TIME + TICK */}
-          <div className="h-3 flex justify-end items-center gap-1 text-[10px] opacity-70 mt-1">
+          <div className="h-3 flex justify-end items-center gap-1 text-[8px] opacity-70 mt-1">
             {format(new Date(message.createdAt), "HH:mm")}
 
             {isUser && (
               <>
                 {/* SENT */}
                 {message.messageStatus === "send" && (
-                  <FaCheck size={10} className="text-gray-500" />
+                  <FaCheck size={8} className="text-gray-500" />
                 )}
 
                 {/* DELIVERED */}
                 {message.messageStatus === "delivered" && (
-                  <FaCheckDouble size={10} className="text-gray-500" />
+                  <FaCheckDouble size={8} className="text-gray-500" />
                 )}
 
                 {/* READ */}
                 {message.messageStatus === "read" && (
-                  <FaCheckDouble size={10} className="text-blue-500" />
+                  <FaCheckDouble size={8} className="text-blue-500" />
                 )}
               </>
             )}
@@ -185,11 +185,11 @@ const MessageBubble = ({
         {showOptions && (
           <div
             ref={optionRef}
-            className={`absolute top-8 right-1 z-50 w-36 rounded-xl shadow-lg py-2 text sm ${
-              theme === "dark"
-                ? "bg-[#1d1f1f] text-white"
-                : "bg-gray-100 text-black"
-            }`}
+            className={`absolute top-8 
+      ${isUser ? "right-1" : "left-1"} 
+      z-50 w-36 rounded-xl shadow-lg py-1 text-sm ${
+        theme === "dark" ? "bg-[#1d1f1f] text-white" : "bg-gray-100 text-black"
+      }`}
           >
             <button
               onClick={() => {
@@ -198,7 +198,7 @@ const MessageBubble = ({
                 }
                 setShowOptions(false);
               }}
-              className="flex items-center w-full px-4 py-2 gap-3 rounded-lg"
+              className="flex items-center w-full px-2 py-1 gap-3 rounded-lg"
             >
               <FaRegCopy size={14} />
               <span>Copy</span>
@@ -210,7 +210,7 @@ const MessageBubble = ({
                   deleteMessage(message?._id);
                   setShowOptions(false);
                 }}
-                className="flex items-center w-full px-4 py-2 gap-3 rounded-lg text-red-600"
+                className="flex items-center w-full px-2 py-1 gap-3 rounded-lg text-red-600"
               >
                 <FaRegCopy className="text-red-500" size={14} />
                 <span>Delete</span>

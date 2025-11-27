@@ -6,7 +6,7 @@ import Sidebar from "./Sidebar";
 import { motion, AnimatePresence } from "framer-motion";
 import ChatWindow from "../pages/chatSection/ChatWindow";
 
-const LayOut = ({
+const Layout = ({
   children,
   isThemeDialogOpen,
   toggleThemeDialog,
@@ -133,4 +133,4 @@ const LayOut = ({
   );
 };
 
-export default LayOut;
+export default Layout;

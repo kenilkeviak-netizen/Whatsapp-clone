@@ -85,24 +85,27 @@ const ChatWindow = ({ selectedContact, setSelectedContact }) => {
   }, [messages]);
 
   useEffect(() => {
-    if (message && selectedContact) {
-      startTyping(selectedContact?._id);
+    if (!selectedContact) return;
 
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
+    // User is typing
+    if (message.trim().length > 0) {
+      startTyping(selectedContact._id);
 
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+      // stop typing after 1.5 sec of no input
       typingTimeoutRef.current = setTimeout(() => {
-        stopTyping(selectedContact?._id);
-      }, 2000);
+        stopTyping(selectedContact._id);
+      }, 1500);
+    } else {
+      // If input is empty → stop typing immediately
+      stopTyping(selectedContact._id);
     }
 
     return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
-  }, [messages, selectedContact, startTyping, stopTyping]);
+  }, [message, selectedContact]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
