@@ -32,28 +32,15 @@ export const verifyOtp = async (phoneNumber, phoneSuffix, email, otp) => {
 };
 
 // ------------------ UPDATE USER PROFILE ------------------
-export const updateUserProfile = async (updateData) => {
+export const updateUserProfile = async (formData) => {
   try {
-    const formData = new FormData();
-
-    // Add file
-    if (updateData.media) {
-      formData.append("media", updateData.media);
-    }
-
-    // Add other fields
-    if (updateData.username) formData.append("username", updateData.username);
-    if (updateData.about) formData.append("about", updateData.about);
-    if (updateData.agreed !== undefined)
-      formData.append("agreed", updateData.agreed);
-
     const response = await axiosInstance.put("/auth/update-profile", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     });
 
-    return response.data;
+    return response.data; // backend returns { message, data }
   } catch (error) {
     console.error("❌ updateUserProfile error:", error);
     throw error.response ? error.response.data : error.message;

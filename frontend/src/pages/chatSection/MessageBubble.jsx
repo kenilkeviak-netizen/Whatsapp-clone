@@ -80,6 +80,18 @@ const MessageBubble = ({
             </div>
           )}
 
+          {message.contentType === "video" && (
+            <div>
+              <video
+                src={message.imageOrVideoUrl}
+                className="rounded-md mb-1 max-w-full"
+                controls
+                alt="media"
+              />
+              {message.content && <p>{message.content}</p>}
+            </div>
+          )}
+
           {/* TIME + TICK */}
           <div className="h-3 flex justify-end items-center gap-1 text-[8px] opacity-70 mt-1">
             {format(new Date(message.createdAt), "HH:mm")}
