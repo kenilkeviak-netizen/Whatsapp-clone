@@ -6,6 +6,9 @@ import Layout from "../../components/Layout";
 import StatusPreview from "./StatusPreview";
 import { motion } from "framer-motion";
 import { RxCross2 } from "react-icons/rx";
+import { FaCamera, FaEllipsisH, FaPlus } from "react-icons/fa";
+import formatTimestamp from "../../utility/formateTime";
+import StatusList from "./StatusList";
 
 const Status = () => {
   const [previewContact, setPreviewContact] = useState(null);
@@ -201,14 +204,147 @@ const Status = () => {
                       const circumference = 2 * Math.PI * 48;
                       const segmentLength =
                         circumference / userStatuses.statuses.length;
+                      const offset = index * segmentLength;
+                      return (
+                        <circle
+                          key={index}
+                          cx="50"
+                          cy="50"
+                          r="48"
+                          fill="none"
+                          stroke="#25D366"
+                          strokeWidth="4"
+                          strokeDasharray={`${segmentLength - 5} 5`}
+                          strokeDashoffset={-offset}
+                          transform="rotate(-90 50 50)"
+                        ></circle>
+                      );
                     })}
                   </svg>
+
+                  <button
+                    className="absolute bottom-0 right-0 bg-green-500 text-white p-1 rounded-full"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowCreateModel(true);
+                    }}
+                  >
+                    <FaPlus className="h-2 w-2" />
+                  </button>
                 </>
               ) : (
-                <></>
+                <>
+                  <button
+                    className="absolute bottom-0 right-0 bg-green-500 text-white p-1 rounded-full"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowCreateModel(true);
+                    }}
+                  >
+                    <FaPlus className="h-2 w-2" />
+                  </button>
+                </>
               )}
             </div>
+
+            <div className="flex flex-col items-start flex-1">
+              <p className="font-semobold">My Status</p>
+              <p
+                className={`text-sm ${
+                  theme === "dark" ? "text-gray-400" : "text-gray-500"
+                } `}
+              >
+                {userStatuses
+                  ? `${userStatuses.statuses.length} status ${
+                      userStatuses.statuses.length > 1 ? "es" : ""
+                    } ${formatTimestamp(
+                      userStatuses.statuses[userStatuses.statuses.length - 1]
+                        .timestamp
+                    )}`
+                  : "Tap to update status"}
+              </p>
+            </div>
+
+            {userStatuses && (
+              <button
+                className="ml-auto"
+                onClick={() => setShowOPtion(!showOption)}
+              >
+                <FaEllipsisH
+                  className={`h-5 w-5 ${
+                    theme === "dark" ? "text-gray-400" : "text-gray-500"
+                  } `}
+                />
+              </button>
+            )}
           </div>
+
+          {showOption && userStatuses && (
+            <div
+              className={`p-2 shadow-md ${
+                theme === "dark" ? "bg-[rgb(17,23,33)]" : "bg-white "
+              } `}
+            >
+              <button
+                className="w-full text-left text-green-500 py-2 hover:bg-gray-100 px-2 rounded flex items-center"
+                onClick={() => {
+                  setShowCreateModel(true);
+                  setShowOPtion(false);
+                }}
+              >
+                <FaCamera className="inline-block mr-2" /> Add Status
+              </button>
+
+              <button
+                className="w-full text-left text-blue-500 py-2 hover:bg-gray-100 px-2 rounded flex items-center"
+                onClick={() => {
+                  handleStatusPreview(userStatuses);
+                  setShowOPtion(false);
+                }}
+              >
+                View Status
+              </button>
+            </div>
+          )}
+
+          {!loading && (
+            <div className="flex items-center justify-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+            </div>
+          )}
+
+          {!loading && otherStatuses.length > 0 && (
+            <div
+              className={`shadow-md p-4 space-y-4 mt-4 ${
+                theme === "dark" ? "text-gray-400" : "text-gray-500"
+              } `}
+            >
+              <h3
+                className={`font-semibold ${
+                  theme === "dark" ? "text-gray-400" : "text-gray-500"
+                } `}
+              >
+                {" "}
+                Recent Update
+              </h3>
+              {otherStatuses.map((contact, index) => (
+                <React.Fragment key={contact?.id}>
+                  <StatusList
+                    contact={contact}
+                    onPreview={() => handleStatusPreview(contact)}
+                    theme={theme}
+                  />
+                  {index < otherStatuses.length - 1 && (
+                    <hr
+                      className={`${
+                        theme === "dark" ? "border-gray-700" : "border-gray-200"
+                      }`}
+                    />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
         </div>
       </motion.div>
     </Layout>

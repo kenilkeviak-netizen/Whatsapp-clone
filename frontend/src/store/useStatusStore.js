@@ -47,7 +47,7 @@ const useStatusStore = create((set, get) => ({
   // ------------------------------------
   // Remove Socket Events
   // ------------------------------------
-  cleanupSocket: () => {
+  cleanUpSocket: () => {
     const socket = getSocket();
     if (socket) {
       socket.off("new_status");
