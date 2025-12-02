@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import useLayoutStore from "../../store/layoutStore";
 import useThemeStore from "../../store/themeStore";
 import useUserStore from "../../store/useUserStore";
@@ -18,7 +18,18 @@ const ChatList = ({ contacts }) => {
   const filteredContacts = contacts?.filter((contact) =>
     contact?.userName?.toLowerCase().includes(searchTerms.toLowerCase())
   );
-  // console.log("Contacts received from backend:", contacts);
+
+  // -------------------------------
+  // 🔥 FIX: Sync updated contacts to selectedContact
+  // -------------------------------
+  useEffect(() => {
+    if (!selectedContact?._id) return;
+
+    const updated = contacts?.find((c) => c._id === selectedContact._id);
+    if (updated) {
+      setSelectedContact(updated); // Update to latest data (profile pic, name, etc.)
+    }
+  }, [contacts]);
 
   return (
     <div
@@ -62,7 +73,6 @@ const ChatList = ({ contacts }) => {
 
       <div className="overflow-y-auto h-[calc(100vh-120px)]">
         {filteredContacts.map((contact) => (
-          
           <motion.div
             key={contact?._id}
             onClick={() => setSelectedContact(contact)}
@@ -79,8 +89,9 @@ const ChatList = ({ contacts }) => {
             <img
               src={contact?.profilePicture}
               alt={contact?.userName}
-              className="w-12 h-12 rounded-full"
+              className="w-12 h-12 rounded-full object-cover"
             />
+
             <div className="ml-3 flex-1">
               <div className="flex justify-between items-baseline">
                 <h2
@@ -90,7 +101,8 @@ const ChatList = ({ contacts }) => {
                 >
                   {contact?.userName || "Unknown User"}
                 </h2>
-                {contact?.conversation && (
+
+                {contact?.conversation?.lastMessage && (
                   <span
                     className={`text-xs ${
                       theme === "dark" ? "text-gray-400" : "text-gray-500"
@@ -102,14 +114,16 @@ const ChatList = ({ contacts }) => {
                   </span>
                 )}
               </div>
+
               <div className="flex justify-between items-baseline">
                 <p
                   className={`text-sm ${
                     theme === "dark" ? "text-gray-400" : "text-gray-500"
                   } truncate`}
                 >
-                  {contact?.conversation?.lastMessage?.content}
+                  {contact?.conversation?.lastMessage?.content || ""}
                 </p>
+
                 {contact?.conversation?.unreadCount > 0 &&
                   contact?.conversation?.lastMessage?.receiver?._id ===
                     user?._id && (

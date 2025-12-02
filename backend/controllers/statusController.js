@@ -18,14 +18,14 @@ exports.createStatus = async (req, res) => {
     if (file) {
       const uploadFile = await uplaodFileToCloudinary(file);
 
-      if (!uploadFile.secure_) {
+      if (!uploadFile.secure_url) {
         return response(res, 404, "Failed to upload media.");
       }
       mediaUrl = uploadFile?.secure_url;
 
-      if (file.mimtype.startswith("image")) {
+      if (file.mimetype.startsWith("image")) {
         finalContentType = "image";
-      } else if (file.mimtype.startswith("video")) {
+      } else if (file.mimetype.startswith("video")) {
         finalContentType = "video";
       } else {
         return response(res, 400, "Unsupported file type!!");
@@ -48,7 +48,7 @@ exports.createStatus = async (req, res) => {
 
     await status.save();
 
-    const populateStatus = await Status.findOne(status?._id)
+    const populatedStatus = await Status.findOne(status?._id)
       .populate("user", "userName profilePicture")
       .populate("viewers", "userName profilePicture");
 
@@ -57,11 +57,11 @@ exports.createStatus = async (req, res) => {
       // Broadcast to all connectiong users except the creator
       for (const [connectingUserId, socketId] of req.socketUserMap) {
         if (connectingUserId !== userId) {
-          req.io.to(socketId).emit("new_status", populateStatus);
+          req.io.to(socketId).emit("new_status", populatedStatus);
         }
       }
     }
-    return response(res, 201, "Status created successfully", populateStatus);
+    return response(res, 201, "Status created successfully", populatedStatus);
   } catch (error) {
     console.log(error);
     return response(res, 500, "Internal server error");
@@ -90,7 +90,7 @@ exports.viewStatus = async (req, res) => {
   try {
     const status = await Status.findById(statusId);
     if (!status) {
-      return response(res, 404), "Status not found";
+      return response(res, 404, "Status not found");
     }
 
     if (!status.viewers.includes(userId)) {
@@ -115,7 +115,7 @@ exports.viewStatus = async (req, res) => {
             viewers: updatedStatus.viewers,
           };
 
-          res.io.to(statusOwnerSocketId).emit("status_viewed", viewData);
+          req.io.to(statusOwnerSocketId).emit("status_viewed", viewData);
         } else {
           console.log("status owner not connected");
         }
@@ -151,7 +151,7 @@ exports.deleteStatus = async (req, res) => {
     if (req.io && req.socketUserMap) {
       for (const [connectingUserId, socketId] of req.socketUserMap) {
         if (connectingUserId !== userId) {
-          req.io.to(socketId).emit("status_delete", statusId);
+          req.io.to(socketId).emit("status_deleted", statusId);
         }
       }
     }

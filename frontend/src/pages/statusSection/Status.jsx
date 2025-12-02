@@ -6,7 +6,7 @@ import Layout from "../../components/Layout";
 import StatusPreview from "./StatusPreview";
 import { motion } from "framer-motion";
 import { RxCross2 } from "react-icons/rx";
-import { FaCamera, FaEllipsisH, FaPlus } from "react-icons/fa";
+import { FaCamera, FaEllipsisH, FaPlus, FaTimes } from "react-icons/fa";
 import formatTimestamp from "../../utility/formateTime";
 import StatusList from "./StatusList";
 
@@ -40,6 +40,15 @@ const Status = () => {
 
   const userStatuses = getUserStatuses(user?._id);
   const otherStatuses = getOtherStatuses(user?._id);
+
+  // At top of Status component
+  const [tick, setTick] = useState(0);
+
+  // Start ticking every minute (re-render)
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 60 * 1000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     fetchStatuses();
@@ -140,6 +149,7 @@ const Status = () => {
             onDelete={handleDeleteStatus}
             theme={theme}
             currentUser={user}
+            loading={loading}
           />
         )
       }
@@ -216,7 +226,7 @@ const Status = () => {
                           strokeWidth="4"
                           strokeDasharray={`${segmentLength - 5} 5`}
                           strokeDashoffset={-offset}
-                          transform="rotate(-90 50 50)"
+                          transform={`rotate(-90 50 50)`}
                         ></circle>
                       );
                     })}
@@ -255,7 +265,7 @@ const Status = () => {
                 } `}
               >
                 {userStatuses
-                  ? `${userStatuses.statuses.length} status ${
+                  ? `${userStatuses.statuses.length} status${
                       userStatuses.statuses.length > 1 ? "es" : ""
                     } ${formatTimestamp(
                       userStatuses.statuses[userStatuses.statuses.length - 1]
@@ -307,7 +317,7 @@ const Status = () => {
             </div>
           )}
 
-          {!loading && (
+          {loading && (
             <div className="flex items-center justify-center p-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
             </div>
@@ -315,7 +325,7 @@ const Status = () => {
 
           {!loading && otherStatuses.length > 0 && (
             <div
-              className={`shadow-md p-4 space-y-4 mt-4 ${
+              className={`shadow-md p-4 space-y-4 mt-4 bg-white ${
                 theme === "dark" ? "text-gray-400" : "text-gray-500"
               } `}
             >
@@ -324,7 +334,6 @@ const Status = () => {
                   theme === "dark" ? "text-gray-400" : "text-gray-500"
                 } `}
               >
-                {" "}
                 Recent Update
               </h3>
               {otherStatuses.map((contact, index) => (
@@ -345,7 +354,111 @@ const Status = () => {
               ))}
             </div>
           )}
+
+          {!loading && statuses.length === 0 && (
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+              <div
+                className={`text-6xl mb-4 ${
+                  theme === "dark" ? "text-gray-600" : "text-gray-300"
+                }`}
+              >
+                📱
+              </div>
+              <h3
+                className={`text-lg mb-2 font-semibold ${
+                  theme === "dark" ? "text-gray-400" : "text-gray-600"
+                }`}
+              >
+                No Status Updated Yet
+              </h3>
+              <p
+                className={`text-sm ${
+                  theme === "dark" ? "text-gray-500" : "text-gray-600"
+                }`}
+              >
+                Be the First to share a status update
+              </p>
+            </div>
+          )}
         </div>
+
+        {showCreateModel && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div
+              className={`p-6 rounded-lg max-w-md w-full mx-4 ${
+                theme === "dark" ? "bg-gray-800" : "bg-white"
+              }`}
+            >
+              <h3
+                className={`text-lg font-semibold mb-4${
+                  theme === "dark" ? "text-white" : "text-black"
+                }`}
+              >
+                Create Status
+              </h3>
+
+              {filePreview && (
+                <div className="mb-4">
+                  {selectedFile?.type.startsWith("video/") ? (
+                    <video
+                      src={filePreview}
+                      controls
+                      className="w-full h-32 object-cover rounded"
+                    />
+                  ) : (
+                    <img
+                      src={filePreview}
+                      alt="file-preview"
+                      className="w-full h-32 object-cover rounded"
+                    />
+                  )}
+                </div>
+              )}
+
+              <textarea
+                value={newStatus}
+                onChange={(e) => setNewStatus(e.target.value)}
+                placeholder="What's on your mind?"
+                className={`w-full p-3 border rounded-lg mb-4 ${
+                  theme === "dark"
+                    ? "bg-gray-700 text-white border-gray-600"
+                    : "bg-white text-black"
+                }`}
+                rows={3}
+              />
+
+              <input
+                type="file"
+                accept="image/*,video/*"
+                onChange={handleFileChange}
+                className="mb-4"
+              />
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setShowCreateModel(false);
+                    setNewStatus("");
+                    setSelectedFile(null);
+                    setFilePreview(null);
+                  }}
+                  disabled={loading}
+                  className="px-4 py-2 text-gray-500 hover:text-gray-700"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={handleCreateStatus}
+                  disabled={loading || (!newStatus.trim() && !selectedFile)}
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+                >
+                  {loading ? "Creating..." : "Create"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </motion.div>
     </Layout>
   );
