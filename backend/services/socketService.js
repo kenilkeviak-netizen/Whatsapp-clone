@@ -20,7 +20,7 @@ const initializeSocket = (server) => {
 
   //  When new socket connection is established
   io.on("connection", (socket) => {
-    console.log(`user connected: ${socket.id}`);
+    // console.log(`user connected: ${socket.id}`);
     let userId = null;
 
     // handle user connection and mark them online in databse

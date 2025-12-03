@@ -35,7 +35,7 @@ const Status = () => {
     clearError,
     reset,
     initializeSocket,
-    cleanUpSocket,
+    cleanupSocket,
   } = useStatusStore();
 
   const userStatuses = getUserStatuses(user?._id);
@@ -55,7 +55,7 @@ const Status = () => {
     initializeSocket();
 
     return () => {
-      cleanUpSocket();
+      cleanupSocket();
     };
   }, [user?._id]);
 
@@ -265,8 +265,8 @@ const Status = () => {
                 } `}
               >
                 {userStatuses
-                  ? `${userStatuses.statuses.length} status${
-                      userStatuses.statuses.length > 1 ? "es" : ""
+                  ? `${userStatuses.statuses.length} status ${
+                      userStatuses.statuses.length > 1 ? "." : ""
                     } ${formatTimestamp(
                       userStatuses.statuses[userStatuses.statuses.length - 1]
                         .timestamp

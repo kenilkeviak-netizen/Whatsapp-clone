@@ -10,6 +10,7 @@ import {
 import { HiDotsVertical } from "react-icons/hi";
 import EmojiPicker from "emoji-picker-react";
 import useOutsideclick from "../../hooks/useOutsideclick";
+import { MdDelete } from "react-icons/md";
 
 const MessageBubble = ({
   message,
@@ -224,7 +225,7 @@ const MessageBubble = ({
                 }}
                 className="flex items-center w-full px-2 py-1 gap-3 rounded-lg text-red-600"
               >
-                <FaRegCopy className="text-red-500" size={14} />
+                <MdDelete className="text-red-500" size={14} />
                 <span>Delete</span>
               </button>
             )}
