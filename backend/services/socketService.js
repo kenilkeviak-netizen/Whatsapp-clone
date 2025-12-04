@@ -39,7 +39,7 @@ const initializeSocket = (server) => {
         // notify all users that this user is not online
         io.emit("user_status", { userId, isOnline: true });
       } catch (error) {
-        console.error("Error handling user connection", error);
+        console.error("Error handling user connections", error);
       }
     });
 
