@@ -20,7 +20,7 @@ const useVideoCallStore = create(
     iceCandidatesQueue: [],
 
     isCallModelOpen: false,
-    callStatus: "ideal",
+    callStatus: "idle",
 
     // Actions
     setCurrentCall: (call) => {
@@ -29,6 +29,10 @@ const useVideoCallStore = create(
 
     setIncomingCall: (call) => {
       set({ incomingCall: call });
+    },
+
+    setRemoteStream: (stream) => {
+      set({ remoteStream: stream });
     },
 
     setCallActive: (active) => {
@@ -103,13 +107,52 @@ const useVideoCallStore = create(
       }
     },
 
-    endCall: () => {
+    /*     endCall: () => {
       const { localStream, peerConnection } = get();
       if (localStream) {
         localStream.getTracks().forEach((track) => track.stop());
       }
 
       if (peerConnection) {
+        peerConnection.close();
+      }
+
+      set({
+        currentCall: null,
+        incomingCall: null,
+        isCallActive: false,
+        callType: null,
+        localStream: null,
+        remoteStream: null,
+        isVideoEnabled: true,
+        isAudioEnabled: true,
+        peerConnection: null,
+        iceCandidatesQueue: [],
+        isCallModelOpen: false,
+        callStatus: "idle",
+      });
+    }, */
+
+    endCall: () => {
+      const { localStream, remoteStream, peerConnection } = get();
+
+      // Stop local media
+      if (localStream) {
+        localStream.getTracks().forEach((track) => track.stop());
+      }
+
+      // Stop remote media
+      if (remoteStream) {
+        remoteStream.getTracks().forEach((track) => track.stop());
+      }
+
+      // Close peer connection properly
+      if (peerConnection) {
+        peerConnection.onicecandidate = null;
+        peerConnection.ontrack = null;
+        peerConnection.onconnectionstatechange = null;
+        peerConnection.oniceconnectionstatechange = null;
+        peerConnection.onsignalingstatechange = null;
         peerConnection.close();
       }
 

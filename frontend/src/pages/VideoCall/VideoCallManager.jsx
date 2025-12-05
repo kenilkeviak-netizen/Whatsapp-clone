@@ -14,7 +14,7 @@ const VideoCallManager = () => {
     endCall,
   } = useVideoCallStore();
   const { user } = useUserStore();
-  const { socket } = getSocket();
+  const socket = getSocket();
 
   useEffect(() => {
     if (!socket) return;
@@ -24,9 +24,9 @@ const VideoCallManager = () => {
       callerName,
       callerAvatar,
       callType,
-      CallId,
+      callId,
     }) => {
-      setIncomingCall({ callerId, CallId, callerAvatar, callerName });
+      setIncomingCall({ callerId, callId, callerAvatar, callerName });
       setCallType(callType);
       setCallModelOpen(true);
       setCallStatus("ringing");
@@ -39,12 +39,12 @@ const VideoCallManager = () => {
       }, 2000);
     };
 
-    socket.on("incomming_call", handleIncomingCall);
-    socket.on("failed", handleCallEnded);
+    socket.on("incoming_call", handleIncomingCall);
+    socket.on("call_failed", handleCallEnded);
 
     return () => {
-      socket.off("incomming_call", handleIncomingCall);
-      socket.off("failed", handleCallEnded);
+      socket.off("incoming_call", handleIncomingCall);
+      socket.off("call_failed", handleCallEnded);
     };
   }, [
     socket,

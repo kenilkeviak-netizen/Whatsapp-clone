@@ -40,7 +40,7 @@ const ChatWindow = ({ selectedContact, setSelectedContact }) => {
   const { theme } = useThemeStore();
   const { user } = useUserStore();
 
-  const { socket } = getSocket();
+  const socket = getSocket();
 
   const {
     messages,
@@ -299,7 +299,11 @@ const ChatWindow = ({ selectedContact, setSelectedContact }) => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <button className="focus:outline-none" onClick={handleVideoCall} title={online ? "start video call" : "user is offline"}>
+            <button
+              className="focus:outline-none"
+              onClick={handleVideoCall}
+              title={online ? "start video call" : "user is offline"}
+            >
               <FaVideo className="h-5 w-5 text-green-500 hover:text-green-600" />
             </button>
             <button className="focus:outline-none">
