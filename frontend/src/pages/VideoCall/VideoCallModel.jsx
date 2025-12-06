@@ -3,11 +3,12 @@ import useVideoCallStore from "../../store/videoCallStore";
 import useUserStore from "../../store/useUserStore";
 import useThemeStore from "../../store/themeStore";
 import {
-  FaMicrochip,
+  FaMicrophone,
   FaMicrophoneSlash,
   FaPhoneSlash,
   FaTimes,
-  FaViadeo,
+  FaVideo,
+  FaVideoSlash,
 } from "react-icons/fa";
 
 const VideoCallModel = ({ socket }) => {
@@ -373,180 +374,150 @@ const VideoCallModel = ({ socket }) => {
     isCallActive || callStatus === "calling" || callStatus === "connecting";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 backdrop-blur-sm transition-all duration-300">
       <div
-        className={`relative w-full h-full max-w-4xl max-h-3xl rounded-lg overflow-hidden ${
-          theme === "dark" ? "bg-gray-900" : "bg-white"
+        className={`relative w-full h-full max-w-[900px] max-h-[600px] rounded-xl overflow-hidden shadow-xl border ${
+          theme === "dark"
+            ? "bg-gray-900 border-gray-700"
+            : "bg-white border-gray-200"
         }`}
       >
+        {/* Incoming Call View */}
         {incomingCall && !isCallActive && (
-          <div className="flex flex-col items-center justify-center h-full p-8">
-            <div className="text-center mb-8">
-              <div className="w-32 h-32 rounded-full bg-gray-300 mx-auto mb-4 overflow">
+          <div className="flex flex-col items-center justify-center h-full p-8 space-y-6 animate-fade-in">
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="w-36 h-36 rounded-full overflow-hidden shadow-lg ring-4 ring-green-400 animate-pulse">
                 <img
                   src={displayInfo?.avatar}
-                  alt={displayInfo.name}
+                  alt={displayInfo?.name}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <h2
-                className={`text-2xl font-semibold mb-2 ${
-                  theme === "dark" ? "text-white" : "text-gray-900"
-                }`}
-              >
+
+              <h2 className="text-3xl font-semibold text-gray-600 tracking-wide">
                 {displayInfo?.name}
               </h2>
-              <p
-                className={`text-lg ${
-                  theme === "dark" ? "text-gray-300" : "text-gray-600"
-                }`}
-              >
+
+              <p className="text-lg text-gray-600 animate-bounce">
                 Incoming {callType} call...
               </p>
             </div>
 
-            <div className="flex space-x-6">
+            {/* Buttons */}
+            <div className="flex space-x-10 mt-4">
               <button
                 onClick={handleRejectCall}
-                className="w-16 h-16 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white transition-colors"
+                className="w-16 h-16 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg ring-4 ring-red-700/50 hover:scale-110 transition transform"
               >
-                <FaPhoneSlash className=" w-6 h-6 " />
+                <FaPhoneSlash className="text-white w-7 h-7" />
               </button>
 
               <button
                 onClick={handleAnswerCall}
-                className="w-16 h-16 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center text-white transition-colors"
+                className="w-16 h-16 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center shadow-lg ring-4 ring-green-700/50 hover:scale-110 transition transform"
               >
-                <FaViadeo className=" w-6 h-6 " />
+                <FaVideo className="text-white w-7 h-7" />
               </button>
             </div>
           </div>
         )}
 
         {/* Active Call UI */}
-
         {shouldShowActiveCall && (
-          <div className="relative w-full h-full">
-            {callType === "video" && (
+          <div className="relative w-full h-full animate-fade-in">
+            {/* Remote Video */}
+            {callType === "video" && remoteStream ? (
               <video
                 ref={remoteVideoRef}
                 autoPlay
                 playsInline
-                className={`w-full h-full object-cover bg-gray-800 ${
-                  remoteStream ? "block" : "hidden"
-                }`}
+                className="w-full h-full object-cover bg-black"
               />
-            )}
-
-            {/* Avatar / status display */}
-            {(!remoteStream || callType !== "video") && (
-              <div className="w-full h-full bg-gray-800 flex- items-center justify-center">
-                <div className="text-center">
-                  <div className="w-32 h-32 rounded-full bg-gray-600 mx-auto mb-4 overflow">
+            ) : (
+              <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                <div className="text-center space-y-3">
+                  <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-600 mx-auto shadow-xl">
                     <img
-                      src={displayInfo.avatar}
-                      alt={displayInfo?.name}
+                      src={displayInfo?.avatar}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <p className="text-white text-xl">
+                  <p className="text-white text-xl font-medium">
                     {callStatus === "calling"
                       ? `Calling ${displayInfo?.name}...`
                       : callStatus === "connecting"
-                      ? "connectiong..."
+                      ? "Connecting..."
                       : callStatus === "connected"
                       ? displayInfo?.name
                       : callStatus === "failed"
-                      ? "Connection failed"
+                      ? "Call Failed"
                       : displayInfo?.name}
                   </p>
                 </div>
               </div>
             )}
 
-            {/* local video */}
-            {callType === "video" &&
-              localStream &
-              (
-                <div className="absolute top-4 right-4 w-48 h-36 bg-gray-800 rounded-lg overflow-hidden border-2 border-white">
-                  <video
-                    ref={localVideoRef}
-                    autoPlay
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
+            {/* Local floating preview */}
+            {callType === "video" && localStream && (
+              <div className="absolute bottom-4 right-4 w-44 h-32 rounded-lg overflow-hidden shadow-md border border-white/70 backdrop-blur">
+                <video
+                  ref={localVideoRef}
+                  autoPlay
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
 
-            {/* Call Status */}
+            {/* Status label */}
             <div className="absolute top-4 left-4">
-              <div
-                className={`px-2 py-2 rounded-full ${
-                  theme === "dark" ? "bg-gray-800" : "bg-white"
-                } bg-opacity-75`}
-              >
-                <p
-                  className={`text-sm ${
-                    theme === "dark" ? "text-white" : "text-gray-900"
-                  }`}
-                >
-                  {callStatus === "connected" ? "Connected" : callStatus}
-                </p>
+              <div className="px-3 py-1 rounded-full bg-black/50 backdrop-blur text-white text-sm shadow">
+                {callStatus === "connected" ? "Connected" : callStatus}
               </div>
             </div>
 
-            {/*  call controls */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-              <div className="flex space-x-4">
-                {callType === "video" && (
-                  <button
-                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                      isVideoEnabled
-                        ? "bg-gray-600 hover:bg-gray-700 text-white"
-                        : "bg-red-500 hover:bg-red-600 text-white"
-                    }`}
-                  >
-                    {isVideoEnabled ? (
-                      <FaViadeo className="w-5 h-5" />
-                    ) : (
-                      <FaPhoneSlash className="w-5 h-5" />
-                    )}
-                  </button>
-                )}
-
+            {/* Bottom Control Bar */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-6 py-3 bg-black/50 shadow-xl flex items-center space-x-5 rounded-full backdrop-blur">
+              {/* Video Toggle */}
+              {callType === "video" && (
                 <button
-                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                    isAudioEnabled
-                      ? "bg-gray-600 hover:bg-gray-700 text-white"
-                      : "bg-red-500 hover:bg-red-600 text-white"
+                  onClick={toggleVideo}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition ${
+                    isVideoEnabled ? "bg-gray-300" : "bg-red-500"
                   }`}
                 >
-                  {isAudioEnabled ? (
-                    <FaMicrochip className="w-5 h-5" />
+                  {isVideoEnabled ? (
+                    <FaVideo className="text-black w-6 h-6" />
                   ) : (
-                    <FaMicrophoneSlash className="w-5 h-5" />
+                    <FaVideoSlash className="text-white w-6 h-6" />
                   )}
                 </button>
+              )}
 
-                <button
-                  onClick={handleEndCall}
-                  className="w-16 h-16 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white transition-colors"
-                >
-                  <FaPhoneSlash className=" w-6 h-6 " />
-                </button>
-              </div>
+              {/* Audio Toggle */}
+              <button
+                onClick={toggleAudio}
+                className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition ${
+                  isAudioEnabled ? "bg-gray-300" : "bg-red-500"
+                }`}
+              >
+                {isAudioEnabled ? (
+                  <FaMicrophone className="text-black w-6 h-6" />
+                ) : (
+                  <FaMicrophoneSlash className="text-white w-6 h-6" />
+                )}
+              </button>
+
+              {/* End Call */}
+              <button
+                onClick={handleEndCall}
+                className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center shadow-xl ring-4 ring-red-800 hover:bg-red-700 hover:scale-110 transition"
+              >
+                <FaPhoneSlash className="text-white w-7 h-7" />
+              </button>
             </div>
           </div>
-        )}
-
-        {callStatus === "calling" && (
-          <button
-            onClick={handleEndCall}
-            className="absolute top-4 right-4 w-8 h-8 bg-gray-600 hover:bg-gray-700 rounded-full flex items-center justify-center text-white transition-colors"
-          >
-            <FaTimes className=" w-6 h-6 " />
-          </button>
         )}
       </div>
     </div>
