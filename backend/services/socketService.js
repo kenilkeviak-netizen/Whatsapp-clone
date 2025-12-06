@@ -1,6 +1,7 @@
 const { Server } = require("socket.io");
 const User = require("../models/User");
 const Message = require("../models/Messages");
+const handleVideoCallEvent = require("./video-call-event");
 
 // Map to store online user -> userId, socketId
 const onlineUsers = new Map();
@@ -27,6 +28,7 @@ const initializeSocket = (server) => {
     socket.on("user_connected", async (connectingUserId) => {
       try {
         userId = connectingUserId;
+        socket.userId = userId;
         onlineUsers.set(userId, socket.id);
         socket.join(userId);
 
@@ -39,7 +41,7 @@ const initializeSocket = (server) => {
         // notify all users that this user is not online
         io.emit("user_status", { userId, isOnline: true });
       } catch (error) {
-        console.error("Error handling user connection", error);
+        console.error("Error handling user connections", error);
       }
     });
 
@@ -195,6 +197,9 @@ const initializeSocket = (server) => {
         }
       }
     );
+
+    // handle video call events
+    handleVideoCallEvent(socket, io, onlineUsers);
 
     //   handle disconnected and mark user online
 
