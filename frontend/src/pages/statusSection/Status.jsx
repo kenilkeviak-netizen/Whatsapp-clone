@@ -325,8 +325,10 @@ const Status = () => {
 
           {!loading && otherStatuses.length > 0 && (
             <div
-              className={`shadow-md p-4 space-y-4 mt-4 bg-white ${
-                theme === "dark" ? "text-gray-400" : "text-gray-500"
+              className={`shadow-md p-4 space-y-4 mt-4  ${
+                theme === "dark"
+                  ? "text-gray-400 bg-[rgb(17,23,33)]"
+                  : "text-gray-500 bg-white"
               } `}
             >
               <h3

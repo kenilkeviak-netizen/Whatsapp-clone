@@ -246,12 +246,45 @@ const Login = () => {
   };
 
   const handleOtpChange = (index, value) => {
+    if (!/^[0-9]$/.test(value) && value !== "") return;
+
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
     setOtpValue("otp", newOtp.join(""));
+
+    // Move focus to next box automatically
     if (value && index < 5) {
-      document.getElementById(`otp-${index + 1}`).focus();
+      document.getElementById(`otp-input-${index + 1}`).focus();
+    }
+  };
+
+  const handleOtpBackspace = (index, value) => {
+    if (value === "") {
+      if (index > 0) {
+        document.getElementById(`otp-input-${index - 1}`).focus();
+      }
+    }
+
+    const newOtp = [...otp];
+    newOtp[index] = "";
+    setOtp(newOtp);
+    setOtpValue("otp", newOtp.join(""));
+  };
+
+  const handlePasteOtp = (event) => {
+    const pasted = event.clipboardData.getData("text").trim();
+
+    // check only digits and exactly 6
+    if (/^\d{6}$/.test(pasted)) {
+      const arr = pasted.split("");
+      setOtp(arr);
+      setOtpValue("otp", pasted);
+
+      // focus last box
+      setTimeout(() => {
+        document.getElementById(`otp-input-5`).focus();
+      }, 10);
     }
   };
 
@@ -392,7 +425,7 @@ const Login = () => {
                   )}
                 </div>
                 <input
-                  type="text"
+                  type="number"
                   placeholder="Phone Number"
                   {...loginRegister("phoneNumber")}
                   value={phoneNumber}
@@ -477,18 +510,22 @@ const Login = () => {
               {userPhoneData.phoneNumber && userPhoneData.phoneNumber}
             </p>
 
-            <div className="flex justify-between">
+            <div className="flex justify-between" onPaste={handlePasteOtp}>
               {otp.map((digit, index) => (
                 <input
                   key={index}
-                  id={`otp-${index}`}
+                  id={`otp-input-${index}`}
                   type="text"
                   maxLength={1}
                   value={digit}
-                  onChange={(e) => {
-                    handleOtpChange(index, e.target.value);
+                  autoFocus={index === 0} // auto focus first
+                  onChange={(e) => handleOtpChange(index, e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Backspace") {
+                      handleOtpBackspace(index, e.target.value);
+                    }
                   }}
-                  className={`w-12 h-12 text-center border ${
+                  className={`w-12 h-12 text-center border text-xl font-bold ${
                     theme === "dark"
                       ? "bg-gray-700 border-gray-600 text-white"
                       : "bg-white border-gray-300"
